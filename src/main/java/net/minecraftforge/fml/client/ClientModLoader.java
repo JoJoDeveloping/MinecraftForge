@@ -19,6 +19,7 @@
 
 package net.minecraftforge.fml.client;
 
+import com.google.common.collect.Lists;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.DownloadingPackFinder;
@@ -27,13 +28,13 @@ import net.minecraft.resources.IReloadableResourceManager;
 import net.minecraft.resources.ResourcePackList;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.LoadingFailedException;
-import net.minecraftforge.fml.LogicalSidedProvider;
-import net.minecraftforge.fml.ModLoader;
-import net.minecraftforge.fml.SidedProvider;
-import net.minecraftforge.fml.VersionChecker;
-import net.minecraftforge.fml.client.gui.LoadingErrorScreen;
+import net.minecraftforge.fml.*;
+import net.minecraftforge.fml.client.gui.LoadingProblemsScreen;
+import net.minecraftforge.fml.loading.LoadingModList;
+import net.minecraftforge.fml.loading.moddiscovery.ModFile;
 import net.minecraftforge.fml.packs.ResourcePackLoader;
+
+import java.util.List;
 
 @OnlyIn(Dist.CLIENT)
 public class ClientModLoader
@@ -72,14 +73,16 @@ public class ClientModLoader
         return VersionChecker.Status.UP_TO_DATE;
     }
 
-    public static void complete()
+    public static void complete(Runnable showMainMenu)
     {
         GlStateManager.disableTexture2D();
         GlStateManager.enableTexture2D();
-        if (error != null) {
-            mc.displayGuiScreen(new LoadingErrorScreen(error));
+        List<ModFile> brokenFiles = LoadingModList.get().getBrokenFiles();
+        if (error != null || (brokenFiles != null && !brokenFiles.isEmpty())) {
+            mc.displayGuiScreen(new LoadingProblemsScreen(error, brokenFiles, showMainMenu));
         } else {
             ClientHooks.logMissingTextureErrors();
+            showMainMenu.run();
         }
     }
 

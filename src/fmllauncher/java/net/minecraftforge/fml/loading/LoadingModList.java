@@ -136,4 +136,9 @@ public class LoadingModList
     public void setBrokenFiles(final List<ModFile> brokenFiles) {
         this.brokenFiles = brokenFiles;
     }
+
+    public List<ModFile> getBrokenFiles()
+    {
+        return  brokenFiles;
+    }
 }
