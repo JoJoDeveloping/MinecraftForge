@@ -27,6 +27,7 @@ import net.minecraft.util.Util;
 import net.minecraftforge.fml.ForgeI18n;
 import net.minecraftforge.fml.LoadingFailedException;
 import net.minecraftforge.fml.ModLoadingException;
+import net.minecraftforge.fml.loading.EarlyLoadingWarning;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.fml.loading.moddiscovery.ModFile;
 import org.apache.logging.log4j.LogManager;
@@ -42,16 +43,16 @@ public class LoadingProblemsScreen extends GuiErrorScreen {
     private final Path modsDir;
     private final Path logFile;
     private final LoadingFailedException loadingFailedException;
-    private final List<ModFile> brokenFiles;
+    private final List<EarlyLoadingWarning> warnings;
     private final Runnable continueToMainMenu;
     private LoadingMessageList errorList;
-    public LoadingProblemsScreen(@Nullable LoadingFailedException loadingException, @Nullable List<ModFile> brokenFiles, Runnable showMainMenu)
+    public LoadingProblemsScreen(@Nullable LoadingFailedException loadingException, @Nullable List<EarlyLoadingWarning> warnings, Runnable showMainMenu)
     {
         super(null, null);
         this.loadingFailedException = loadingException;
         this.modsDir = FMLPaths.MODSDIR.get();
         this.logFile = FMLPaths.GAMEDIR.get().resolve(Paths.get("logs","latest.log"));
-        this.brokenFiles = brokenFiles;
+        this.warnings = warnings;
         this.continueToMainMenu = showMainMenu;
     }
 
@@ -73,7 +74,7 @@ public class LoadingProblemsScreen extends GuiErrorScreen {
     }
 
     private int headerHeight(){
-        if(loadingFailedException != null && brokenFiles != null && !brokenFiles.isEmpty())
+        if(loadingFailedException != null && warnings != null && !warnings.isEmpty())
             return 44;
         return 35;
     }
@@ -109,8 +110,8 @@ public class LoadingProblemsScreen extends GuiErrorScreen {
         String header = ForgeI18n.parseMessage("fml.loadingerrorscreen.header");
         if(loadingFailedException != null)
             header += "\n" + ForgeI18n.parseMessage("fml.loadingerrorscreen.errors", this.loadingFailedException.getErrors().size());
-        if(brokenFiles != null && !brokenFiles.isEmpty())
-            header += "\n" + ForgeI18n.parseMessage("fml.loadingerrorscreen.warnings", this.brokenFiles.size());
+        if(warnings != null && !warnings.isEmpty())
+            header += "\n" + ForgeI18n.parseMessage("fml.loadingerrorscreen.warnings", this.warnings.size());
 
         drawMultiLineCenteredString(fontRenderer, header, this.width / 2, 10);
         this.buttons.forEach(button -> button.render(mouseX, mouseY, partialTicks));
@@ -127,9 +128,8 @@ public class LoadingProblemsScreen extends GuiErrorScreen {
             super(parent.mc,parent.width,parent.height,parent.headerHeight(),parent.height - 50, 2 * parent.mc.fontRenderer.FONT_HEIGHT + 8);
             if(parent.loadingFailedException != null)
                 parent.loadingFailedException.getErrors().forEach(e->addEntry(new MessageEntry(e.formatToString())));
-            if(parent.brokenFiles != null)
-                parent.brokenFiles.forEach(e -> addEntry(new MessageEntry(
-                        ForgeI18n.parseMessage("fml.loadingerrorscreen.brokenfile", parent.modsDir.relativize(e.getFilePath()).toString()))));
+            if(parent.warnings != null)
+                parent.warnings.forEach(e -> addEntry(new MessageEntry(ForgeI18n.parseMessage(e.getI18message(), e.getArgs()))));
 
         }
 

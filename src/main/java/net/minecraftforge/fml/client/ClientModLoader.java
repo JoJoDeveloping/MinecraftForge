@@ -30,6 +30,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.*;
 import net.minecraftforge.fml.client.gui.LoadingProblemsScreen;
+import net.minecraftforge.fml.loading.EarlyLoadingWarning;
 import net.minecraftforge.fml.loading.LoadingModList;
 import net.minecraftforge.fml.loading.moddiscovery.ModFile;
 import net.minecraftforge.fml.packs.ResourcePackLoader;
@@ -77,9 +78,9 @@ public class ClientModLoader
     {
         GlStateManager.disableTexture2D();
         GlStateManager.enableTexture2D();
-        List<ModFile> brokenFiles = LoadingModList.get().getBrokenFiles();
-        if (error != null || (brokenFiles != null && !brokenFiles.isEmpty())) {
-            mc.displayGuiScreen(new LoadingProblemsScreen(error, brokenFiles, showMainMenu));
+        List<EarlyLoadingWarning> warnings = LoadingModList.get().getWarnings();
+        if (error != null || (!warnings.isEmpty())) {
+            mc.displayGuiScreen(new LoadingProblemsScreen(error, warnings, showMainMenu));
         } else {
             ClientHooks.logMissingTextureErrors();
             showMainMenu.run();

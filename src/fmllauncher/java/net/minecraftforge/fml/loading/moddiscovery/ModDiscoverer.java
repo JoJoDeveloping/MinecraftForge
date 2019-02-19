@@ -20,9 +20,7 @@
 package net.minecraftforge.fml.loading.moddiscovery;
 
 import cpw.mods.modlauncher.ServiceLoaderStreamUtils;
-import net.minecraftforge.fml.loading.FMLLoader;
-import net.minecraftforge.fml.loading.LoadingModList;
-import net.minecraftforge.fml.loading.ModSorter;
+import net.minecraftforge.fml.loading.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -83,7 +81,7 @@ public class ModDiscoverer {
         loadingModList.addCoreMods();
         loadingModList.addAccessTransformers();
         loadingModList.addForScanning(backgroundScanHandler);
-        loadingModList.setBrokenFiles(brokenFiles);
+        brokenFiles.stream().map(f -> new EarlyLoadingWarning("fml.loadingerrorscreen.brokenfile", FMLPaths.GAMEDIR.get().relativize(f.getFilePath()).toString())).forEach(loadingModList::reportWarning);
         return backgroundScanHandler;
     }
 

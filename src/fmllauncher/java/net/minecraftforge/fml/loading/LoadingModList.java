@@ -29,10 +29,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -47,7 +44,7 @@ public class LoadingModList
     private final Map<String, ModFileInfo> fileById;
     private BackgroundScanHandler scanner;
     private final List<EarlyLoadingException> preLoadErrors;
-    private List<ModFile> brokenFiles;
+    private List<EarlyLoadingWarning> loadingWarnings;
 
     private LoadingModList(final List<ModFile> modFiles, final List<ModInfo> sortedList)
     {
@@ -59,6 +56,7 @@ public class LoadingModList
                 map(ModInfo.class::cast).
                 collect(Collectors.toMap(ModInfo::getModId, ModInfo::getOwningFile));
         this.preLoadErrors = new ArrayList<>();
+        this.loadingWarnings = new ArrayList<>();
     }
 
     public static LoadingModList of(List<ModFile> modFiles, List<ModInfo> sortedList, final EarlyLoadingException earlyLoadingException)
@@ -136,12 +134,12 @@ public class LoadingModList
         return preLoadErrors;
     }
 
-    public void setBrokenFiles(final List<ModFile> brokenFiles) {
-        this.brokenFiles = brokenFiles;
+    public void reportWarning(final EarlyLoadingWarning... warnings) {
+        loadingWarnings.addAll(Arrays.asList(warnings));
     }
 
-    public List<ModFile> getBrokenFiles()
+    public List<EarlyLoadingWarning> getWarnings()
     {
-        return  brokenFiles;
+        return loadingWarnings;
     }
 }
