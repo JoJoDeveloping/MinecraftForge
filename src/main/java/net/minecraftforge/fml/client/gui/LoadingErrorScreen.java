@@ -52,14 +52,16 @@ public class LoadingErrorScreen extends ErrorScreen {
     private LoadingEntryList entryList;
     private String errorHeader;
     private String warningHeader;
+    private Runnable showMainMenu;
 
-    public LoadingErrorScreen(LoadingFailedException loadingException, List<ModLoadingWarning> warnings)
+    public LoadingErrorScreen(LoadingFailedException loadingException, List<ModLoadingWarning> warnings, Runnable showMainMenu)
     {
         super(new StringTextComponent("Loading Error"), null);
         this.modLoadWarnings = warnings;
         this.modLoadErrors = loadingException == null ? Collections.emptyList() : loadingException.getErrors();
         this.modsDir = FMLPaths.MODSDIR.get();
         this.logFile = FMLPaths.GAMEDIR.get().resolve(Paths.get("logs","latest.log"));
+        this.showMainMenu = showMainMenu;
     }
 
     @Override
@@ -78,7 +80,7 @@ public class LoadingErrorScreen extends ErrorScreen {
         if (this.modLoadErrors.isEmpty()) {
             this.addButton(new Button(this.width / 4, this.height - 24, this.width / 2, 20, ForgeI18n.parseMessage("fml.button.continue.launch"), b -> {
                 ClientHooks.logMissingTextureErrors();
-                this.minecraft.displayGuiScreen(null);
+                showMainMenu.run();
             }));
         }
 
