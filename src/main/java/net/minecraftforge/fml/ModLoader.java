@@ -21,6 +21,7 @@ package net.minecraftforge.fml;
 
 import com.google.common.collect.ImmutableList;
 import cpw.mods.modlauncher.TransformingClassLoader;
+import net.minecraft.util.Unit;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -43,10 +44,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -149,16 +150,24 @@ public class ModLoader
     }
 
     private void dispatchAndHandleError(LifecycleEventProvider event) {
+        dispatchAndHandleErrorAsync(event).join();
+    }
+
+    private CompletableFuture<Unit> dispatchAndHandleErrorAsync(LifecycleEventProvider event) {
         if (!loadingExceptions.isEmpty()) {
             LOGGER.error(LOADING,"Skipping lifecycle event {}, {} errors found.", event, loadingExceptions.size());
+            return CompletableFuture.completedFuture(Unit.INSTANCE);
         } else {
-            event.dispatch(this::accumulateErrors);
-        }
-        if (!loadingExceptions.isEmpty()) {
-            LOGGER.fatal(LOADING,"Failed to complete lifecycle event {}, {} errors found", event, loadingExceptions.size());
-            throw new LoadingFailedException(loadingExceptions);
+            return event.dispatch(this::accumulateErrors).thenApply(k -> {
+                if (!loadingExceptions.isEmpty()) {
+                    LOGGER.fatal(LOADING, "Failed to complete lifecycle event {}, {} errors found", event, loadingExceptions.size());
+                    throw new LoadingFailedException(loadingExceptions);
+                }
+                return Unit.INSTANCE;
+            });
         }
     }
+
     private void accumulateErrors(List<ModLoadingException> errors) {
         loadingExceptions.addAll(errors);
     }
@@ -195,11 +204,14 @@ public class ModLoader
         }
     }
 
+    public CompletableFuture<Unit> callFinalModEvents(){
+        return  dispatchAndHandleErrorAsync(LifecycleEventProvider.ENQUEUE_IMC).
+                thenCompose((u)->dispatchAndHandleErrorAsync(LifecycleEventProvider.PROCESS_IMC)).
+                thenCompose((u)->dispatchAndHandleErrorAsync(LifecycleEventProvider.COMPLETE));
+    }
+
     public void finishMods()
     {
-        dispatchAndHandleError(LifecycleEventProvider.ENQUEUE_IMC);
-        dispatchAndHandleError(LifecycleEventProvider.PROCESS_IMC);
-        dispatchAndHandleError(LifecycleEventProvider.COMPLETE);
         GameData.freezeData();
         NetworkRegistry.lock();
     }

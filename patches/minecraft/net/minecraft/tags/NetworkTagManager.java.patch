@@ -1,0 +1,18 @@
+--- a/net/minecraft/tags/NetworkTagManager.java
++++ b/net/minecraft/tags/NetworkTagManager.java
+@@ -68,6 +68,7 @@
+       return completablefuture.thenCombine(completablefuture1, Pair::of).thenCombine(completablefuture2.thenCombine(completablefuture3, Pair::of), (p_215296_0_, p_215296_1_) -> {
+          return new NetworkTagManager.ReloadResults(p_215296_0_.getFirst(), p_215296_0_.getSecond(), p_215296_1_.getFirst(), p_215296_1_.getSecond());
+       }).thenCompose(p_215226_1_::func_216872_a).thenAcceptAsync((p_215298_1_) -> {
++         System.out.println("Finishing sync part for "+this.getClass().getName());
+          this.func_199718_c();
+          this.field_199719_a.func_219779_a(p_215298_1_.field_219785_a);
+          this.field_199720_b.func_219779_a(p_215298_1_.field_219786_b);
+@@ -77,6 +78,7 @@
+          ItemTags.func_199902_a(this.field_199720_b);
+          FluidTags.func_206953_a(this.field_205705_c);
+          EntityTypeTags.func_219759_a(this.field_215299_d);
++         System.out.println("Finished sync part for "+this.getClass().getName());
+       }, p_215226_6_);
+    }
+ 

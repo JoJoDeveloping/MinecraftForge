@@ -22,8 +22,10 @@ package net.minecraftforge.fml.client;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.DownloadingPackFinder;
 import net.minecraft.client.resources.ClientResourcePackInfo;
+import net.minecraft.profiler.IProfiler;
 import net.minecraft.resources.IFutureReloadListener;
 import net.minecraft.resources.IReloadableResourceManager;
+import net.minecraft.resources.IResourceManager;
 import net.minecraft.resources.ResourcePackList;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -45,6 +47,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 import static net.minecraftforge.fml.loading.LogMarkers.LOADING;
@@ -91,29 +94,38 @@ public class ClientModLoader
 
     public static void addInitialReloadListener(List<IFutureReloadListener> l)
     {
-        l.add((ISelectiveResourceReloadListener) (rm,rt) -> {
-            end(); //TODO this can be worked into the existing async init framework by having this return an CompFuture
-            GlStateManager.disableTexture();
-            GlStateManager.enableTexture();
-            List<ModLoadingWarning> warnings = ModLoader.get().getWarnings();
-            boolean showWarnings = true;
-            try {
-                showWarnings = ForgeConfig.CLIENT.showLoadWarnings.get();
-            } catch (NullPointerException e) {
-                // We're in an early error state, config is not available. Assume true.
-            }
-            if (!showWarnings) {
-                //User disabled warning screen, as least log them
-                if (!warnings.isEmpty()) {
-                    LOGGER.warn(LOADING, "Mods loaded with {} warning(s)", warnings.size());
-                    warnings.forEach(warning -> LOGGER.warn(LOADING, warning.formatToString()));
-                }
-                warnings = Collections.emptyList(); //Clear warnings, as the user does not want to see them
-            }
-            if (error != null || !warnings.isEmpty()) {
-                mc.displayGuiScreen(new LoadingErrorScreen(error, warnings));
-            } else {
-                ClientHooks.logMissingTextureErrors();
+        l.add(new IFutureReloadListener() {
+            @Override
+            public CompletableFuture<Void> func_215226_a(IStage stage, IResourceManager resMngr, IProfiler prof, IProfiler prof2, Executor async, Executor sync) {
+                return ModLoader.get().callFinalModEvents().
+                        thenCompose(stage::func_216872_a).
+                        thenRunAsync(()->{
+                            System.out.println("Finishing sync part for "+this.getClass().getName());
+                            end();
+                            GlStateManager.disableTexture();
+                            GlStateManager.enableTexture();
+                            List<ModLoadingWarning> warnings = ModLoader.get().getWarnings();
+                            boolean showWarnings = true;
+                            try {
+                                showWarnings = ForgeConfig.CLIENT.showLoadWarnings.get();
+                            } catch (NullPointerException e) {
+                                // We're in an early error state, config is not available. Assume true.
+                            }
+                            if (!showWarnings) {
+                                //User disabled warning screen, as least log them
+                                if (!warnings.isEmpty()) {
+                                    LOGGER.warn(LOADING, "Mods loaded with {} warning(s)", warnings.size());
+                                    warnings.forEach(warning -> LOGGER.warn(LOADING, warning.formatToString()));
+                                }
+                                warnings = Collections.emptyList(); //Clear warnings, as the user does not want to see them
+                            }
+                            if (error != null || !warnings.isEmpty()) {
+                                mc.displayGuiScreen(new LoadingErrorScreen(error, warnings));
+                            } else {
+                                ClientHooks.logMissingTextureErrors();
+                            }
+                            System.out.println("Finished sync part for "+this.getClass().getName());
+                }, sync);
             }
         });
     }

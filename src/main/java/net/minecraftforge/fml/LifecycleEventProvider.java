@@ -19,14 +19,13 @@
 
 package net.minecraftforge.fml;
 
+import net.minecraft.util.Unit;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.forgespi.language.ILifecycleEvent;
 
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.*;
 
 public enum LifecycleEventProvider
 {
@@ -40,7 +39,7 @@ public enum LifecycleEventProvider
     COMPLETE(()->new LifecycleEvent(ModLoadingStage.COMPLETE));
 
     private final Supplier<? extends LifecycleEvent> event;
-    private final BiConsumer<LifecycleEvent, Consumer<List<ModLoadingException>>> eventDispatcher;
+    private final BiFunction<LifecycleEvent, Consumer<List<ModLoadingException>>, CompletableFuture<Unit>> eventDispatcher;
     private Supplier<Event> customEventSupplier;
     private LifecycleEvent.Progression progression = LifecycleEvent.Progression.NEXT;
 
@@ -49,7 +48,7 @@ public enum LifecycleEventProvider
         this(e, ModList.parallelDispatcher);
     }
 
-    LifecycleEventProvider(Supplier<? extends LifecycleEvent> e, BiConsumer<LifecycleEvent, Consumer<List<ModLoadingException>>> eventDispatcher)
+    LifecycleEventProvider(Supplier<? extends LifecycleEvent> e, BiFunction<LifecycleEvent, Consumer<List<ModLoadingException>>, CompletableFuture<Unit>> eventDispatcher)
     {
         this.event = e;
         this.eventDispatcher = eventDispatcher;
@@ -63,11 +62,11 @@ public enum LifecycleEventProvider
         this.progression = progression;
     }
 
-    public void dispatch(Consumer<List<ModLoadingException>> errorHandler) {
+    public CompletableFuture<Unit> dispatch(Consumer<List<ModLoadingException>> errorHandler) {
         final LifecycleEvent lifecycleEvent = this.event.get();
         lifecycleEvent.setCustomEventSupplier(this.customEventSupplier);
         lifecycleEvent.changeProgression(this.progression);
-        this.eventDispatcher.accept(lifecycleEvent, errorHandler);
+        return this.eventDispatcher.apply(lifecycleEvent, errorHandler);
     }
 
 

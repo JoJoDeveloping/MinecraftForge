@@ -8,3 +8,19 @@
           TextureUtil.releaseTextureId(itextureobject.func_110552_b());
        }
  
+@@ -132,6 +133,7 @@
+ 
+    public CompletableFuture<Void> func_215226_a(IFutureReloadListener.IStage p_215226_1_, IResourceManager p_215226_2_, IProfiler p_215226_3_, IProfiler p_215226_4_, Executor p_215226_5_, Executor p_215226_6_) {
+       return CompletableFuture.allOf(MainMenuScreen.func_213097_a(this, p_215226_5_), this.func_215268_a(Widget.WIDGETS_LOCATION, p_215226_5_)).<Void>thenCompose(p_215226_1_::func_216872_a).thenAcceptAsync((p_215266_3_) -> {
++         System.out.println("Finishing sync part for "+this.getClass().getName());
+          MissingTextureSprite.func_195676_d();
+          Iterator<Entry<ResourceLocation, ITextureObject>> iterator = this.field_110585_a.entrySet().iterator();
+ 
+@@ -145,6 +147,7 @@
+                itextureobject.func_215244_a(this, p_215226_2_, resourcelocation, p_215226_6_);
+             }
+          }
++         System.out.println("Finished sync part for "+this.getClass().getName());
+ 
+       }, p_215226_6_);
+    }

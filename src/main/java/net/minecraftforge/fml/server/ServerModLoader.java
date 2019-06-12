@@ -45,6 +45,7 @@ public class ServerModLoader
     }
 
     public static void end() {
+        ModLoader.get().callFinalModEvents().join();
         ModLoader.get().finishMods();
         List<ModLoadingWarning> warnings = ModLoader.get().getWarnings();
         if (!warnings.isEmpty()) {

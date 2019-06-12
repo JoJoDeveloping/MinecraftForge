@@ -1,6 +1,22 @@
 --- a/net/minecraft/client/particle/ParticleManager.java
 +++ b/net/minecraft/client/particle/ParticleManager.java
-@@ -235,6 +235,7 @@
+@@ -164,6 +164,7 @@
+          p_215226_3_.func_219897_b();
+          return atlastexture$sheetdata;
+       }, p_215226_5_).thenCompose(p_215226_1_::func_216872_a).thenAcceptAsync((p_215229_3_) -> {
++         System.out.println("Finishing sync part for "+this.getClass().getName());
+          p_215226_4_.func_219894_a();
+          p_215226_4_.func_76320_a("upload");
+          this.field_215243_j.func_215260_a(p_215229_3_);
+@@ -175,6 +176,7 @@
+          });
+          p_215226_4_.func_76319_b();
+          p_215226_4_.func_219897_b();
++         System.out.println("Finished sync part for "+this.getClass().getName());
+       }, p_215226_6_);
+    }
+ 
+@@ -235,6 +237,7 @@
     }
  
     public void func_78873_a(Particle p_78873_1_) {
@@ -8,7 +24,7 @@
        this.field_187241_h.add(p_78873_1_);
     }
  
-@@ -342,7 +343,7 @@
+@@ -342,7 +345,7 @@
     }
  
     public void func_180533_a(BlockPos p_180533_1_, BlockState p_180533_2_) {
@@ -17,7 +33,7 @@
           VoxelShape voxelshape = p_180533_2_.func_196954_c(this.field_78878_a, p_180533_1_);
           double d0 = 0.25D;
           voxelshape.func_197755_b((p_199284_3_, p_199284_5_, p_199284_7_, p_199284_9_, p_199284_11_, p_199284_13_) -> {
-@@ -414,6 +415,12 @@
+@@ -414,6 +417,12 @@
        return String.valueOf(this.field_78876_b.values().stream().mapToInt(Collection::size).sum());
     }
  

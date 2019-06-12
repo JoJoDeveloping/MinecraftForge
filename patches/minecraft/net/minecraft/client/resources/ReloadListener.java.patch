@@ -1,0 +1,12 @@
+--- a/net/minecraft/client/resources/ReloadListener.java
++++ b/net/minecraft/client/resources/ReloadListener.java
+@@ -14,7 +14,9 @@
+       return CompletableFuture.supplyAsync(() -> {
+          return (T)this.func_212854_a_(p_215226_2_, p_215226_3_);
+       }, p_215226_5_).thenCompose(p_215226_1_::func_216872_a).thenAcceptAsync((p_215269_3_) -> {
++         System.out.println("Finishing sync part for "+this.getClass().getName());
+          this.func_212853_a_(p_215269_3_, p_215226_2_, p_215226_4_);
++         System.out.println("Finished sync part for "+this.getClass().getName());
+       }, p_215226_6_);
+    }
+ 

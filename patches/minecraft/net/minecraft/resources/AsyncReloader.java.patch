@@ -1,0 +1,29 @@
+--- a/net/minecraft/resources/AsyncReloader.java
++++ b/net/minecraft/resources/AsyncReloader.java
+@@ -38,11 +38,17 @@
+       List<CompletableFuture<S>> list = new ArrayList<>();
+       CompletableFuture<?> completablefuture = p_i50690_6_;
+       this.field_219568_d = Sets.newHashSet(p_i50690_4_);
+-
++      for(int i = 0; i < p_i50690_4_.size(); i++){
++         System.out.println(i+". IFRL: "+p_i50690_4_.get(i).getClass().getName());
++      }
++      String lastfrl="none";
+       for(final IFutureReloadListener ifuturereloadlistener : p_i50690_4_) {
++         String lastfrl_f = lastfrl;
++         lastfrl = ifuturereloadlistener.getClass().getName();
+          CompletableFuture<?> completablefuture_f = completablefuture;
+          CompletableFuture<S> completablefuture1 = p_i50690_5_.create(new IFutureReloadListener.IStage() {
+             public <T> CompletableFuture<T> func_216872_a(T p_216872_1_) {
++               System.out.println("Async part for "+ifuturereloadlistener.getClass().getName()+" is complete!");
+                p_i50690_2_.execute(() -> {
+                   AsyncReloader.this.field_219568_d.remove(ifuturereloadlistener);
+                   if (AsyncReloader.this.field_219568_d.isEmpty()) {
+@@ -51,6 +57,7 @@
+ 
+                });
+                return AsyncReloader.this.field_219566_b.thenCombine(completablefuture_f, (p_216874_1_, p_216874_2_) -> {
++                  System.out.println("Async and previous sync ("+lastfrl_f+") are complete");
+                   return p_216872_1_;
+                });
+             }
