@@ -1,6 +1,15 @@
 --- a/net/minecraft/resources/SimpleReloadableResourceManager.java
 +++ b/net/minecraft/resources/SimpleReloadableResourceManager.java
-@@ -50,7 +50,6 @@
+@@ -17,8 +17,6 @@
+ import java.util.stream.Collectors;
+ import net.minecraft.util.ResourceLocation;
+ import net.minecraft.util.Unit;
+-import net.minecraftforge.api.distmarker.Dist;
+-import net.minecraftforge.api.distmarker.OnlyIn;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+ 
+@@ -50,7 +48,6 @@
  
     }
  
@@ -8,7 +17,7 @@
     public Set<String> func_199001_a() {
        return this.field_199016_e;
     }
-@@ -64,7 +63,6 @@
+@@ -64,7 +61,6 @@
        }
     }
  
@@ -16,12 +25,13 @@
     public boolean func_219533_b(ResourceLocation p_219533_1_) {
        IResourceManager iresourcemanager = this.field_199014_c.get(p_219533_1_.func_110624_b());
        return iresourcemanager != null ? iresourcemanager.func_219533_b(p_219533_1_) : false;
-@@ -118,18 +116,20 @@
+@@ -118,18 +114,21 @@
        return iasyncreloader;
     }
  
 -   @OnlyIn(Dist.CLIENT)
     public IAsyncReloader func_219535_a(Executor p_219535_1_, Executor p_219535_2_, CompletableFuture<Unit> p_219535_3_) {
++      net.minecraftforge.fml.client.ClientModLoader.addInitialReloadListener(this.field_219539_d);
        return this.func_219538_b(p_219535_1_, p_219535_2_, this.field_219539_d, p_219535_3_);
     }
  

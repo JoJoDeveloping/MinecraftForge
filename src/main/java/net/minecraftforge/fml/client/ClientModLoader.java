@@ -22,6 +22,7 @@ package net.minecraftforge.fml.client;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.DownloadingPackFinder;
 import net.minecraft.client.resources.ClientResourcePackInfo;
+import net.minecraft.resources.IFutureReloadListener;
 import net.minecraft.resources.IReloadableResourceManager;
 import net.minecraft.resources.ResourcePackList;
 import net.minecraftforge.api.distmarker.Dist;
@@ -36,6 +37,7 @@ import net.minecraftforge.fml.SidedProvider;
 import net.minecraftforge.fml.VersionChecker;
 import net.minecraftforge.fml.client.gui.LoadingErrorScreen;
 import net.minecraftforge.fml.packs.ResourcePackLoader;
+import net.minecraftforge.resource.ISelectiveResourceReloadListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -43,6 +45,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import static net.minecraftforge.fml.loading.LogMarkers.LOADING;
 
@@ -86,30 +89,33 @@ public class ClientModLoader
         return VersionChecker.Status.UP_TO_DATE;
     }
 
-    public static void complete()
+    public static void addInitialReloadListener(List<IFutureReloadListener> l)
     {
-        GlStateManager.disableTexture();
-        GlStateManager.enableTexture();
-        List<ModLoadingWarning> warnings = ModLoader.get().getWarnings();
-        boolean showWarnings = true;
-        try {
-            showWarnings = ForgeConfig.CLIENT.showLoadWarnings.get();
-        } catch (NullPointerException e) {
-            // We're in an early error state, config is not available. Assume true.
-        }
-        if (!showWarnings) {
-            //User disabled warning screen, as least log them
-            if (!warnings.isEmpty()) {
-                LOGGER.warn(LOADING, "Mods loaded with {} warning(s)", warnings.size());
-                warnings.forEach(warning -> LOGGER.warn(LOADING, warning.formatToString()));
+        l.add((ISelectiveResourceReloadListener) (rm,rt) -> {
+            end(); //TODO this can be worked into the existing async init framework by having this return an CompFuture
+            GlStateManager.disableTexture();
+            GlStateManager.enableTexture();
+            List<ModLoadingWarning> warnings = ModLoader.get().getWarnings();
+            boolean showWarnings = true;
+            try {
+                showWarnings = ForgeConfig.CLIENT.showLoadWarnings.get();
+            } catch (NullPointerException e) {
+                // We're in an early error state, config is not available. Assume true.
             }
-            warnings = Collections.emptyList(); //Clear warnings, as the user does not want to see them
-        }
-        if (error != null || !warnings.isEmpty()) {
-            mc.displayGuiScreen(new LoadingErrorScreen(error, warnings));
-        } else {
-            ClientHooks.logMissingTextureErrors();
-        }
+            if (!showWarnings) {
+                //User disabled warning screen, as least log them
+                if (!warnings.isEmpty()) {
+                    LOGGER.warn(LOADING, "Mods loaded with {} warning(s)", warnings.size());
+                    warnings.forEach(warning -> LOGGER.warn(LOADING, warning.formatToString()));
+                }
+                warnings = Collections.emptyList(); //Clear warnings, as the user does not want to see them
+            }
+            if (error != null || !warnings.isEmpty()) {
+                mc.displayGuiScreen(new LoadingErrorScreen(error, warnings));
+            } else {
+                ClientHooks.logMissingTextureErrors();
+            }
+        });
     }
 
     public static boolean isLoading()
