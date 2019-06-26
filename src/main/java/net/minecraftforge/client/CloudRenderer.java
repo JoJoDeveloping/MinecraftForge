@@ -81,7 +81,7 @@ public class CloudRenderer implements ISelectiveResourceReloadListener
     public CloudRenderer()
     {
         // Resource manager should always be reloadable.
-        ((IReloadableResourceManager) mc.getResourceManager()).addReloadListener(this);
+        ((IReloadableResourceManager) mc.getResourceManager()).addReloadListener(new ResourceLocation("cloud_renderer"), this);
     }
 
     private int getScale()

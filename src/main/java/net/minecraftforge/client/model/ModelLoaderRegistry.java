@@ -65,21 +65,21 @@ public class ModelLoaderRegistry
     // Forge built-in loaders
     static
     {
-        registerLoader(B3DLoader.INSTANCE);
-        registerLoader(OBJLoader.INSTANCE);
-        registerLoader(ModelFluid.FluidLoader.INSTANCE);
-        registerLoader(ItemLayerModel.Loader.INSTANCE);
-        registerLoader(MultiLayerModel.Loader.INSTANCE);
-        registerLoader(ModelDynBucket.LoaderDynBucket.INSTANCE);
+        registerLoader("b3d", B3DLoader.INSTANCE);
+        registerLoader("obj", OBJLoader.INSTANCE);
+        registerLoader("modelfluid", ModelFluid.FluidLoader.INSTANCE);
+        registerLoader("itemlayer", ItemLayerModel.Loader.INSTANCE);
+        registerLoader("multi_layer", MultiLayerModel.Loader.INSTANCE);
+        registerLoader("model_dyn_bucket", ModelDynBucket.LoaderDynBucket.INSTANCE);
     }
 
     /*
      * Makes system aware of your loader.
      */
-    public static void registerLoader(ICustomModelLoader loader)
+    public static void registerLoader(String name, ICustomModelLoader loader)
     {
         loaders.add(loader);
-        ((IReloadableResourceManager) Minecraft.getInstance().getResourceManager()).addReloadListener(loader);
+        ((IReloadableResourceManager) Minecraft.getInstance().getResourceManager()).addReloadListener(new ResourceLocation("custom_model_loader_"+name), loader);
     }
 
     public static boolean loaded(ResourceLocation location)

@@ -1,0 +1,11 @@
+--- a/net/minecraft/world/gen/feature/template/TemplateManager.java
++++ b/net/minecraft/world/gen/feature/template/TemplateManager.java
+@@ -39,7 +39,7 @@
+       this.field_195432_d = p_i49570_1_;
+       this.field_191154_c = p_i49570_3_;
+       this.field_195433_e = p_i49570_2_.toPath().resolve("generated").normalize();
+-      p_i49570_1_.func_195570_aG().func_219534_a(this);
++      p_i49570_1_.func_195570_aG().addReloadListener(new ResourceLocation("template_manager"), this);
+    }
+ 
+    public Template func_200220_a(ResourceLocation p_200220_1_) {

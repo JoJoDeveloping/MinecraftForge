@@ -1,0 +1,11 @@
+--- a/net/minecraft/resources/IReloadableResourceManager.java
++++ b/net/minecraft/resources/IReloadableResourceManager.java
+@@ -16,5 +16,7 @@
+    @OnlyIn(Dist.CLIENT)
+    IAsyncReloader func_219537_a(Executor p_219537_1_, Executor p_219537_2_, CompletableFuture<Unit> p_219537_3_, List<IResourcePack> p_219537_4_);
+ 
+-   void func_219534_a(IFutureReloadListener p_219534_1_);
++   void addReloadListener(net.minecraft.util.ResourceLocation name, IFutureReloadListener p_219534_1_);
++
++   java.util.Map<net.minecraft.util.ResourceLocation, IFutureReloadListener> getAndResetReloaders();
+ }

@@ -1,5 +1,16 @@
 --- a/net/minecraft/resources/SimpleReloadableResourceManager.java
 +++ b/net/minecraft/resources/SimpleReloadableResourceManager.java
+@@ -25,8 +25,8 @@
+ public class SimpleReloadableResourceManager implements IReloadableResourceManager {
+    private static final Logger field_199012_a = LogManager.getLogger();
+    private final Map<String, FallbackResourceManager> field_199014_c = Maps.newHashMap();
+-   private final List<IFutureReloadListener> field_199015_d = Lists.newArrayList();
+-   private final List<IFutureReloadListener> field_219539_d = Lists.newArrayList();
++   private final Map<ResourceLocation, IFutureReloadListener> field_199015_d = Maps.newLinkedHashMap();
++   private final Map<ResourceLocation, IFutureReloadListener> field_219539_d = Maps.newLinkedHashMap();
+    private final Set<String> field_199016_e = Sets.newLinkedHashSet();
+    private final ResourcePackType field_199017_f;
+    private final Thread field_219540_g;
 @@ -50,7 +50,6 @@
  
     }
@@ -16,13 +27,38 @@
     public boolean func_219533_b(ResourceLocation p_219533_1_) {
        IResourceManager iresourcemanager = this.field_199014_c.get(p_219533_1_.func_110624_b());
        return iresourcemanager != null ? iresourcemanager.func_219533_b(p_219533_1_) : false;
-@@ -118,18 +116,20 @@
+@@ -101,11 +99,19 @@
+       return iasyncreloader.func_219552_a();
+    }
+ 
+-   public void func_219534_a(IFutureReloadListener p_219534_1_) {
+-      this.field_199015_d.add(p_219534_1_);
+-      this.field_219539_d.add(p_219534_1_);
++   public void addReloadListener(ResourceLocation name, IFutureReloadListener p_219534_1_) {
++      if(this.field_199015_d.put(name, p_219534_1_) != null) throw new RuntimeException(name.toString());
++      this.field_219539_d.put(name, p_219534_1_);
+    }
+ 
++   @Override
++   public Map<ResourceLocation, IFutureReloadListener> getAndResetReloaders() {
++      Map<ResourceLocation, IFutureReloadListener> l = Maps.newLinkedHashMap(field_219539_d);
++      field_219539_d.clear();
++      field_199015_d.clear();
++      return l;
++   }
++
+    protected IAsyncReloader func_219538_b(Executor p_219538_1_, Executor p_219538_2_, List<IFutureReloadListener> p_219538_3_, CompletableFuture<Unit> p_219538_4_) {
+       IAsyncReloader iasyncreloader;
+       if (field_199012_a.isDebugEnabled()) {
+@@ -118,19 +124,22 @@
        return iasyncreloader;
     }
  
 -   @OnlyIn(Dist.CLIENT)
     public IAsyncReloader func_219535_a(Executor p_219535_1_, Executor p_219535_2_, CompletableFuture<Unit> p_219535_3_) {
-       return this.func_219538_b(p_219535_1_, p_219535_2_, this.field_219539_d, p_219535_3_);
+-      return this.func_219538_b(p_219535_1_, p_219535_2_, this.field_219539_d, p_219535_3_);
++      net.minecraftforge.client.ForgeHooksClient.registerReloadListeners(this);
++      return this.func_219538_b(p_219535_1_, p_219535_2_, Lists.newArrayList(this.field_219539_d.values()), p_219535_3_);
     }
  
     public IAsyncReloader func_219537_a(Executor p_219537_1_, Executor p_219537_2_, CompletableFuture<Unit> p_219537_3_, List<IResourcePack> p_219537_4_) {
@@ -36,5 +72,7 @@
        }
 +      });
  
-       return this.func_219538_b(p_219537_1_, p_219537_2_, this.field_199015_d, p_219537_3_);
+-      return this.func_219538_b(p_219537_1_, p_219537_2_, this.field_199015_d, p_219537_3_);
++      return this.func_219538_b(p_219537_1_, p_219537_2_, Lists.newArrayList(this.field_199015_d.values()), p_219537_3_);
     }
+ }

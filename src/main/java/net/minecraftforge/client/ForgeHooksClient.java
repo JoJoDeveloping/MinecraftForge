@@ -198,7 +198,9 @@ public class ForgeHooksClient
 
     public static void registerReloadListeners(IReloadableResourceManager resourceManager)
     {
-        ModLoader.get().postEvent(new RegisterReloadListenersEvent(resourceManager));
+        RegisterReloadListenersEvent event = new RegisterReloadListenersEvent(resourceManager);
+        ModLoader.get().postEvent(event);
+        event.finish();
     }
 
     static final ThreadLocal<BlockRenderLayer> renderLayer = new ThreadLocal<BlockRenderLayer>();

@@ -1,0 +1,11 @@
+--- a/net/minecraft/client/renderer/entity/layers/VillagerLevelPendantLayer.java
++++ b/net/minecraft/client/renderer/entity/layers/VillagerLevelPendantLayer.java
+@@ -44,7 +44,7 @@
+       super(p_i50955_1_);
+       this.field_215355_d = p_i50955_2_;
+       this.field_215356_e = p_i50955_3_;
+-      p_i50955_2_.func_219534_a(this);
++      p_i50955_2_.addReloadListener(new ResourceLocation("villager_level_pendant_layer_"+p_i50955_3_), this);
+    }
+ 
+    public void func_212842_a_(T p_212842_1_, float p_212842_2_, float p_212842_3_, float p_212842_4_, float p_212842_5_, float p_212842_6_, float p_212842_7_, float p_212842_8_) {
